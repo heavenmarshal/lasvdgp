@@ -1,0 +1,7 @@
+useDynLib(lasvdgp)
+
+export(lasvdgpWorker,lasvdgpParallel)
+
+importFrom(parallel,makeCluster)
+importFrom(parallel,parApply)
+importFrom(parallel,stopCluster)

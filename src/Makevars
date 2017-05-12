@@ -1,0 +1,6 @@
+#PKG_PATH=$(mR -q -e ".libPaths()" | grep "\[[0-9]\]" | awk '{print $2}' | sed ':a;N;$!ba;s/\n/ /g'| sed 's/"//g')
+#LAGP_PATH=$(find $PKG_PATH -name "laGP.so")
+LAGP_PATH=/home/ruzhang/R/x86_64-pc-linux-gnu-library/3.2/laGP/libs/laGP.so
+PKG_CFLAGS = -I include
+PKG_CXXFLAGS = -I include
+PKG_LIBS = ${LAGP_PATH} 
