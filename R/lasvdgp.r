@@ -4,7 +4,7 @@ lasvdgpWorker <- function(X0, design, resp, n0, nn,
                           frac = .9, gstart = 0.001,
                           resvdThres = min(5, nn-n0),
                           every = min(5,nn-n0),
-                          maxit=100, verb=0,trans=FALSE)
+                          maxit=100, verb=0)
 {
     if(!is.matrix(design)) stop("design must be a matrix")
     if(!is.matrix(resp)) stop("resp must be a matrix")
@@ -73,8 +73,7 @@ lasvdgpParallel <- function(X0, design, resp, n0, nn,
     cl <- parallel::makeCluster(nthread)
     ret <- tryCatch(parallel::parLapply(cl,X0par,lasvdgpWorker,design,
                                         resp,n0,nn,nfea,nsvd,nadd,frac,
-                                        gstart,resvdThres,every,maxit,verb,
-                                        TRUE),
+                                        gstart,resvdThres,every,maxit,verb),
                     finally=parallel::stopCluster(cl))
     pmean <- matrix(unlist(sapply(ret,`[`,"pmean")),nrow=tlen)
     ps2 <- matrix(unlist(sapply(ret,`[`,"ps2")),nrow=tlen)

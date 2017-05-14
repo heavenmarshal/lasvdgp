@@ -281,7 +281,7 @@ void predlasvdGP(lasvdGP* lasvdgp, double* pmean, double* ps2)
   nbas = lasvdgp -> nbas;
   coeff = new_zero_matrix(nbas,n0);
   for(i=0; i < nbas; ++i)
-    sum_vectors(coeff[i], gpseps[i]->Z, lasvdgp->reds[i], n0);
+    linalg_daxpy(n0,lasvdgp->reds[i], gpseps[i]->Z,1,coeff[i],1);
   resid = new_p_submatrix_rows(lasvdgp->feaidx,lasvdgp->resp, n0, tlen, 0);
   linalg_dgemm(CblasNoTrans,CblasTrans,tlen,n0,nbas,-1.0,&(lasvdgp->basis),tlen,
 	       coeff,n0,1.0,resid,tlen);
