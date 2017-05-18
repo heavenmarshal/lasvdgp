@@ -4,7 +4,7 @@
 
 typedef struct
 {
-  GPsep **gpseps;
+
   unsigned int nbas;		/* number of svd basis determined by frac*/
   unsigned int N;		/* const number of total design points  */
   unsigned int m;		/* ocnst dimension of inputs */
@@ -16,17 +16,19 @@ typedef struct
   unsigned int nadd; 		/* number of added points in each iteration */
   unsigned int nappsvd;		/* number of points in svd sets with approximated coeff */
   unsigned int hasfitted; 	/* flag if mle has been performed 1, else 0 */
-  double *xpred;		/* the prediction point */
-  double **design;		/* total design matrix, no memory copy */
-  double **resp; 		/* total response matrix, no memory copy  */
-  double *basis;		/* tlen \times nbas matrix of basis cmajor */
-  double *reds;			/* nbas vector of singular vector */
-  double **coeff;		/* nsv \times nbas matrix of right singular vectors  */
   double frac;			/* const: fraction for cumulative rule */
   double gstart; 		/* starting value for nugget */
+
+  GPsep **gpseps;
   int *feaidx;			/* index of neighbor and feasible  points in design */
   int *svdidx;		        /* index of the set to perform svd in total design set*/
   int *neigsvdidx;		/* index of the neighborhood set in svd set */
+  double *xpred;		/* the prediction point */
+  double *basis;		/* tlen \times nbas matrix of basis cmajor */
+  double *reds;			/* nbas vector of singular vector */
+  double **design;		/* total design matrix, no memory copy */
+  double **resp; 		/* total response matrix, no memory copy  */
+  double **coeff;		/* nsv \times nbas matrix of right singular vectors  */
 } lasvdGP;
 
 lasvdGP* newlasvdGP(double* xpred, double **design, double **resp,

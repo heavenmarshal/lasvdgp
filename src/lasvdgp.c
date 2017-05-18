@@ -211,7 +211,7 @@ void selectNewPoints(lasvdGP *lasvdgp)
   quick_select_index(criter,feastart,lasvdgp->nfea,nadd);
   xadd = new_p_submatrix_rows(feastart, lasvdgp-> design,
 			      nadd, lasvdgp->m, 0);
-  zadd = new_matrix(nadd,lasvdgp->nbas);
+  zadd = new_matrix(nadd,nbas);
 
   for(i=0; i<nadd; ++i)
   {
@@ -219,7 +219,7 @@ void selectNewPoints(lasvdGP *lasvdgp)
     isvd = find_int(lasvdgp->svdidx,addidx,lasvdgp->nsvd);
     if(isvd != -1)
     {
-      dupv(zadd[i], lasvdgp->coeff[isvd], lasvdgp->nbas);
+      dupv(zadd[i], lasvdgp->coeff[isvd], nbas);
       lasvdgp -> neigsvdidx[n0] = isvd;
       lasvdgp -> n0 += 1;
       continue;
@@ -227,10 +227,10 @@ void selectNewPoints(lasvdGP *lasvdgp)
     /* else */
     lasvdgp -> svdidx[lasvdgp->nsvd] = addidx;
     /* estimate the coefficient by least squares */
-    linalg_dgemv(CblasTrans,lasvdgp->tlen,lasvdgp->nbas,1.0,
+    linalg_dgemv(CblasTrans,lasvdgp->tlen,nbas,1.0,
 		 &(lasvdgp->basis), lasvdgp->tlen, lasvdgp->resp[addidx],
 		 1,0.0,zadd[i],1);
-    divid_vector(zadd[i],lasvdgp->reds,lasvdgp->nbas);
+    divid_vector(zadd[i],lasvdgp->reds,nbas);
     lasvdgp -> neigsvdidx[n0] = lasvdgp->nsvd;
     lasvdgp -> n0 += 1;
     lasvdgp -> nsvd += 1;
@@ -239,7 +239,7 @@ void selectNewPoints(lasvdGP *lasvdgp)
   lasvdgp -> nfea -= nadd;
   /* update the gp models */
   zcord = new_vector(nadd);
-  for(i = 0; i < lasvdgp-> nbas; ++i)
+  for(i = 0; i < nbas; ++i)
   {
     get_col(zcord,zadd,i,nadd);
     updateGPsep(lasvdgp->gpseps[i],nadd,xadd,zcord,0);
