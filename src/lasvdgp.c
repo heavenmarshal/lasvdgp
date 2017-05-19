@@ -287,6 +287,7 @@ void predlasvdGP(lasvdGP* lasvdgp, double* pmean, double* ps2)
 	       coeff,n0,1.0,resid,tlen);
   /* Y-USV^T */
   ress2 = var_vector(*resid,(double)(n0*tlen+2), n0*tlen);
+  cmean = new_vector(nbas);
   cs2 = new_vector(nbas);
   cdf = new_vector(nbas);
   for(i=0; i<nbas; ++i)

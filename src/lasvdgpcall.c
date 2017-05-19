@@ -33,6 +33,7 @@ void predlasvdgpCall(lasvdGP* lasvdgp, double* pmean, double* ps2mode, double* p
   ress2mean = var_vector(*resid,(double)(n0*tlen-2), n0*tlen);
   *rvmode = ress2mode;
   *rvmean = ress2mean;
+  cmean = new_vector(nbas);
   cs2 = new_vector(nbas);
   cdf = new_vector(nbas);
   for(i=0; i<nbas; ++i)
