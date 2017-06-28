@@ -3,6 +3,6 @@ Version: 1.0-1
 Date: 2017-05-09
 Author: Ru Zhang
 Depends: R (>= 2.14)
-Imports: laGP, parallel
-LinkingTo: laGP
+Imports: laGP, lhs, parallel
+LinkingTo: laGP, lhs
 NeedsCompilation: yes
