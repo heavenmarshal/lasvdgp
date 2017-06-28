@@ -7,7 +7,7 @@ typedef struct
 
   unsigned int nbas;		/* number of svd basis determined by frac*/
   unsigned int N;		/* const number of total design points  */
-  unsigned int m;		/* ocnst dimension of inputs */
+  unsigned int m;		/* const dimension of inputs */
   unsigned int tlen;		/* const: length of time series */
   unsigned int n0;		/* const: starting number of neighborhood points */
   unsigned int nn;		/* const: total number of neighborhood points */
@@ -30,7 +30,8 @@ typedef struct
   double **resp; 		/* total response matrix, no memory copy  */
   double **coeff;		/* nsv \times nbas matrix of right singular vectors  */
 } lasvdGP;
-
+void getDs(double **X, unsigned int n, unsigned int m,
+	   double *dstart, double *dmin, double *dmax, double *dab2);
 lasvdGP* newlasvdGP(double* xpred, double **design, double **resp,
 		    unsigned int N, unsigned int m, unsigned int tlen,
 		    unsigned int nn, unsigned int n0, unsigned int nfea,

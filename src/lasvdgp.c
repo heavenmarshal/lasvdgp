@@ -14,8 +14,8 @@ static const double quanp = 0.1;
 static const double sqreps = 1.490116119384766E-8;
 static double gab[2] = {0.0, 0.0};
 
-static void getDs(double **X, unsigned int n, unsigned int m,
-		  double *dstart, double *dmin, double *dmax, double *dab2)
+void getDs(double **X, unsigned int n, unsigned int m,
+	   double *dstart, double *dmin, double *dmax, double *dab2)
 {
   assert(X);
   assert(dstart);
