@@ -58,7 +58,6 @@ lasvdGP* newlasvdGP(double* xpred, double **design, double **resp,
 /* n0 points include into the neighbor set in the initial step */
   lasvdgp -> nsvd = nsvd;
   lasvdgp -> nadd = nadd;
-  lasvdgp -> hasfitted = 0;
   lasvdgp -> frac = frac;
   lasvdgp -> gstart = gstart;
   lasvdgp -> design = design;
@@ -161,6 +160,7 @@ void buildGPseps(lasvdGP *lasvdgp)
     gpseps[i] = newGPsep(lasvdgp->m, lasvdgp->n0, subdes,
 			 subv, dstart, lasvdgp->gstart, 1);
   }
+  lasvdgp -> hasfitted = 0;
   delete_matrix(subdes);
   free(subv);
   free(dstart);
@@ -332,6 +332,8 @@ void iterlasvdGP(lasvdGP* lasvdgp, unsigned int resvdThres,
       jmlelasvdGP(lasvdgp,maxit,verb);
   }
   /* finishing off */
+  if(lasvdgp->nappsvd > 0)
+    renewlasvdGP(lasvdgp);
   if(lasvdgp->hasfitted == 0)
     jmlelasvdGP(lasvdgp, maxit, verb);
 

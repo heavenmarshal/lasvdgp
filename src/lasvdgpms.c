@@ -125,6 +125,8 @@ void iterlasvdGPms(lasvdGP* lasvdgp, unsigned int resvdThres,
       jmlelasvdGPms(lasvdgp, numstarts, maxit, verb);
   }
   /* finishing off */
+  if(lasvdgp->nappsvd>0)
+    renewlasvdGP(lasvdgp);
   if(lasvdgp->hasfitted == 0)
     jmlelasvdGPms(lasvdgp, numstarts, maxit, verb);
 
