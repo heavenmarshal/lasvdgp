@@ -122,14 +122,17 @@ void iterlasvdGPms(lasvdGP* lasvdgp, unsigned int resvdThres,
       continue;
     }
     if(i % every == 0)
-      jmlelasvdGPms(lasvdgp, numstarts, maxit, verb);
+      jmlelasvdGP(lasvdgp, maxit, verb);
   }
   /* finishing off */
   if(lasvdgp->nappsvd>0)
+  {
     renewlasvdGP(lasvdgp);
-  if(lasvdgp->hasfitted == 0)
     jmlelasvdGPms(lasvdgp, numstarts, maxit, verb);
-
+    return;
+  }
+  if(lasvdgp->hasfitted == 0)
+    jmlelasvdGP(lasvdgp, maxit, verb);
 }
 void lasvdGPms_worker(double** X0, double **design, double **resp,
 		      unsigned int M, unsigned int N, unsigned int m,

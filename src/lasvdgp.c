@@ -221,7 +221,7 @@ void selectNewPoints(lasvdGP *lasvdgp)
     {
       dupv(zadd[i], lasvdgp->coeff[isvd], nbas);
       lasvdgp -> neigsvdidx[n0] = isvd;
-      lasvdgp -> n0 += 1;
+      n0 += 1;
       continue;
     }
     /* else */
@@ -232,10 +232,11 @@ void selectNewPoints(lasvdGP *lasvdgp)
 		 1,0.0,zadd[i],1);
     divid_vector(zadd[i],lasvdgp->reds,nbas);
     lasvdgp -> neigsvdidx[n0] = lasvdgp->nsvd;
-    lasvdgp -> n0 += 1;
+    n0 += 1;
     lasvdgp -> nsvd += 1;
     lasvdgp -> nappsvd += 1;
   }
+  lasvdgp -> n0 = n0;
   lasvdgp -> nfea -= nadd;
   /* update the gp models */
   zcord = new_vector(nadd);
@@ -268,7 +269,7 @@ void renewlasvdGP(lasvdGP* lasvdgp)
 }
 void predlasvdGP(lasvdGP* lasvdgp, double* pmean, double* ps2)
 {
-  int i, n0, tlen, nbas;
+  int i, n0, tlen, nbas, reslen;
   double **resid, **coeff;
   double *cmean, *cs2, *cdf, *bassq, ress2;
   GPsep **gpseps;
@@ -286,7 +287,10 @@ void predlasvdGP(lasvdGP* lasvdgp, double* pmean, double* ps2)
   linalg_dgemm(CblasNoTrans,CblasTrans,tlen,n0,nbas,-1.0,&(lasvdgp->basis),tlen,
 	       coeff,n0,1.0,resid,tlen);
   /* Y-USV^T */
-  ress2 = var_vector(*resid,(double)(n0*tlen+2), n0*tlen);
+  /* ress2 = var_vector(*resid,(double)(n0*tlen+2), n0*tlen); */
+  reslen = n0*tlen;
+  ress2 = linalg_ddot(reslen,*resid,1,*resid,1);
+  ress2 /= (reslen+2);
   cmean = new_vector(nbas);
   cs2 = new_vector(nbas);
   cdf = new_vector(nbas);
