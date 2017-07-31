@@ -1,6 +1,6 @@
 useDynLib(lasvdgp)
 
-export(lasvdgpWorker,lasvdgpParallel,lasvdgpCall,lasvdgpCallParal,lasvdgpms,lasvdgpmsParal)
+export(lasvdgpWorker,lasvdgpParallel,lasvdgpCall,lasvdgpCallParal,lasvdgpms,lasvdgpmsParal,blockPar)
 
 importFrom(parallel,makeCluster)
 importFrom(parallel,parApply)

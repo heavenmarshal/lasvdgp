@@ -86,7 +86,7 @@ lasvdgpCall <- function(X0, design, resp, n0, nn,
                         nsvd = min(3*nn,nfea), nadd = 1,
                         frac = .9, gstart = 0.001,
                         resvdThres = min(5, nn-n0),
-                        every = min(5,nn-n0),
+                        every = min(5,nn-n0),numstarts=5,
                         maxit=100, verb=0)
 {
     if(!is.matrix(design)) stop("design must be a matrix")
@@ -114,7 +114,8 @@ lasvdgpCall <- function(X0, design, resp, n0, nn,
                  as.integer(nfea), as.integer(nsvd),
                  as.integer(nadd), as.double(frac),
                  as.double(gstart), as.integer(resvdThres),
-                 as.integer(every), as.integer(maxit),
+                 as.integer(every), as.integer(numstarts),
+                 as.integer(maxit),
                  as.integer(verb),  PACKAGE="lasvdgp")
     names(ret) <- c("pmean", "ps2mode","ps2mean","ress2mode","ress2mean","range")
     return(ret)
@@ -124,7 +125,7 @@ lasvdgpCallParal <- function(X0, design, resp, n0, nn,
                              nsvd = min(3*nn,nfea), nadd = 1,
                              frac = .9, gstart = 0.001,
                              resvdThres = min(5, nn-n0),
-                             every = min(5,nn-n0),
+                             every = min(5,nn-n0), numstarts=5,
                              maxit=100, verb=0,
                              nthread = 4)
 {
@@ -153,7 +154,7 @@ lasvdgpCallParal <- function(X0, design, resp, n0, nn,
     cl <- parallel::makeCluster(nthread)
     ret <- tryCatch(parallel::parLapply(cl,X0par,lasvdgpCall,design,
                                         resp,n0,nn,nfea,nsvd,nadd,frac,
-                                        gstart,resvdThres,every,maxit,verb),
+                                        gstart,resvdThres,every,numstarts,maxit,verb),
                     finally=parallel::stopCluster(cl))
     pmean <- matrix(unlist(sapply(ret,`[`,"pmean")),nrow=tlen)
     ps2mode <- matrix(unlist(sapply(ret,`[`,"ps2mode")),nrow=tlen)

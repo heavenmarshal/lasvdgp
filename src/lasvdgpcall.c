@@ -2,6 +2,7 @@
 #include "linalg.h"
 #include "matrixext.h"
 #include "lasvdgp.h"
+#include "lasvdgpms.h"
 #include <assert.h>
 #include <R.h>
 #include <Rinternals.h>
@@ -58,12 +59,12 @@ void predlasvdgpCall(lasvdGP* lasvdgp, double* pmean, double* ps2mode, double* p
 SEXP lasvdgp_Call(SEXP X0_, SEXP design_, SEXP resp_, SEXP nn_,
 		  SEXP n0_, SEXP nfea_, SEXP nsvd_, SEXP nadd_,
 		  SEXP frac_, SEXP gstart_, SEXP resvdThres_,
-		  SEXP every_, SEXP maxit_, SEXP verb_)
+		  SEXP every_, SEXP numstarts_, SEXP maxit_, SEXP verb_)
 {
   SEXP ans, rglst;
   /* rglist list of range parameters */
   int i, j, M, N, m, tlen, nn, n0, nfea, nsvd;
-  int nadd, resvdThres, every, maxit, verb, nbas, isMode;
+  int nadd, resvdThres, every, maxit, verb, nbas, isMode, numstarts;
   double frac, gstart;
   double **X0, **design, **resp;
   double **pmean, **ps2mode, **ps2mean;
@@ -84,6 +85,7 @@ SEXP lasvdgp_Call(SEXP X0_, SEXP design_, SEXP resp_, SEXP nn_,
   nadd = INTEGER(nadd_)[0];
   resvdThres = INTEGER(resvdThres_)[0];
   every = INTEGER(every_)[0];
+  numstarts = INTEGER(numstarts_)[0];
   maxit = INTEGER(maxit_)[0];
   verb = INTEGER(verb_)[0];
   frac = REAL(frac_)[0];
@@ -108,8 +110,8 @@ SEXP lasvdgp_Call(SEXP X0_, SEXP design_, SEXP resp_, SEXP nn_,
     xpred = X0[i];
     lasvdgp = newlasvdGP(xpred, design, resp, N, m, tlen, nn, n0,
 			 nfea, nsvd, nadd, frac, gstart);
-    jmlelasvdGP(lasvdgp, maxit, verb);
-    iterlasvdGP(lasvdgp, resvdThres, every, maxit, verb);
+    jmlelasvdGPms(lasvdgp, numstarts, maxit, verb);
+    iterlasvdGPms(lasvdgp, resvdThres, every, numstarts, maxit, verb);
     predlasvdgpCall(lasvdgp, pmean[i], ps2mode[i], ps2mean[i], ress2mode+i, ress2mean+i);
     nbas = lasvdgp->nbas;
     SET_VECTOR_ELT(rglst, i, allocMatrix(REALSXP,m,nbas));
