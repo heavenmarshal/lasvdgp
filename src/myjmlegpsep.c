@@ -118,7 +118,7 @@ void mymleGPsep(GPsep* gpsep, double* dmin, double *dmax, double *ab,
   /* call the C-routine behind R's optim function with method = "L-BFGS-B" */
   lbfgsb_C(gpsep->m, p, dmin, dmax, (lbfgsb_fmin) nllik_sep,
 	   (lbfgsb_fgrad) ndllik_sep, conv, (void*) &info,
-	   0, its, maxit, msg, lbfgs_verb);
+	   SDEPS, its, maxit, msg, lbfgs_verb);
 
   /* check if parameters in p are new */
   rmse = 0.0;
