@@ -50,6 +50,7 @@ void jmlelasvdGPms(lasvdGP *lasvdgp, unsigned int numstarts,
   double dstart, ddmin, ddmax, dab2;
   double **dstarts, *gstarts;
   double *optd, optg, optllik, llik;
+  double *dmin, *dmax;
   int i, j, dim, dits, gits, dconv;
   getDs(lasvdgp->gpseps[0]->X,lasvdgp->n0,lasvdgp->m, &dstart, &ddmin, &ddmax,
 	&dab2);
@@ -63,15 +64,17 @@ void jmlelasvdGPms(lasvdGP *lasvdgp, unsigned int numstarts,
 	    log(grange[0]), log(grange[1]),
 	    dstarts, gstarts);
   optd = new_vector(dim);
+  dmin = new_const_vector(ddmin,lasvdgp->m);
+  dmax = new_const_vector(ddmax,lasvdgp->m);
   for(i=0; i<lasvdgp->nbas; ++i)
   {
     optllik = -DBL_MAX;
     for(j = 0; j < numstarts; ++j)
     {
       newparamsGPsep(lasvdgp->gpseps[i], dstarts[j], gstarts[j]);
-      myjmleGPsep(lasvdgp->gpseps[i], maxit, ddmin, ddmax,
+      myjmleGPsep(lasvdgp->gpseps[i], maxit, dmin, dmax,
 		  grange, dab, gab, verb, &dits,
-		  &gits, &dconv); /* fromR not sure */
+		  &gits, &dconv);
       llik = llikGPsep(lasvdgp->gpseps[i], dab, gab);
       if(llik > optllik)
       {
@@ -85,6 +88,8 @@ void jmlelasvdGPms(lasvdGP *lasvdgp, unsigned int numstarts,
   lasvdgp->hasfitted = 1;
   free(gstarts);
   free(optd);
+  free(dmin);
+  free(dmax);
   delete_matrix(dstarts);
 }
 

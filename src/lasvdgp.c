@@ -174,16 +174,21 @@ void jmlelasvdGP(lasvdGP *lasvdgp, unsigned int maxit, unsigned int verb)
 {
   double dab[2], grange[2]={sqreps,lasvdgp->gstart};
   double dstart, ddmin, ddmax, dab2;
+  double *dmin, *dmax;
   int i, dits, gits, dconv;
   getDs(lasvdgp->gpseps[0]->X,lasvdgp->n0,lasvdgp->m, &dstart, &ddmin, &ddmax,
 	&dab2);
   dab[0] = dab1;
   dab[1] = dab2;
+  dmin = new_const_vector(ddmin,lasvdgp->m);
+  dmax = new_const_vector(ddmax,lasvdgp->m);
   for(i=0; i<lasvdgp->nbas; ++i)
-    myjmleGPsep(lasvdgp->gpseps[i], maxit, ddmin, ddmax,
+    myjmleGPsep(lasvdgp->gpseps[i], maxit, dmin, dmax,
 		grange, dab, gab, verb, &dits,
 		&gits, &dconv);
   lasvdgp->hasfitted = 1;
+  free(dmin);
+  free(dmax);
 }
 void selectNewPoints(lasvdGP *lasvdgp)
 {

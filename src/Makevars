@@ -1,7 +1,7 @@
 LAGP_PATH = `echo 'library(laGP); cat(system.file(package="laGP",mustWork=TRUE))'\
 | "${R_HOME}/bin/R" --vanilla --slave`/libs/laGP.so
-LHS_PATH = `echo 'library(lhs); cat(system.file(package="lhs",mustWork=TRUE))'\
-| "${R_HOME}/bin/R" --vanilla --slave`/libs/lhs.so
+LBFGSB_PATH = `echo 'library(lbfgsb3); cat(system.file(package="lhs",mustWork=TRUE))'\
+| "${R_HOME}/bin/R" --vanilla --slave`/libs/lbfgsb3.so
 PKG_CFLAGS = -I include $(SHLIB_OPENMP_CFLAGS) -DRPRINT
 PKG_CXXFLAGS = -I include
-PKG_LIBS = ${LAGP_PATH} ${LHS_PATH} ${LAPACK_LIBS} ${BLAS_LIBS} ${FLIBS}
+PKG_LIBS = ${LAGP_PATH} ${LBFGSB_PATH} ${LAPACK_LIBS} ${BLAS_LIBS} ${FLIBS}
