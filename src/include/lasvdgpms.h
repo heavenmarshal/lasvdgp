@@ -3,8 +3,8 @@
 void jmlelasvdGPms(lasvdGP *lasvdgp, unsigned int numstarts,
 		   unsigned int maxit, unsigned int verb);
 
-void iterlasvdGPms(lasvdGP* lasvdgp, unsigned int resvdThres,
-		   unsigned int every, unsigned int numstarts,
-		   unsigned int maxit, unsigned int verb);
+int iterlasvdGPms(lasvdGP* lasvdgp, unsigned int resvdThres,
+		  unsigned int every, unsigned int numstarts,
+		  unsigned int maxit, unsigned int verb);
 
 #endif 

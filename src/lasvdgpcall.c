@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <R.h>
 #include <Rinternals.h>
+#include <Rmath.h>
 
 void predlasvdgpCall(lasvdGP* lasvdgp, double* pmean, double* ps2mode, double* ps2mean,
 		     double* rvmode, double* rvmean)
@@ -63,7 +64,7 @@ SEXP lasvdgp_Call(SEXP X0_, SEXP design_, SEXP resp_, SEXP nn_,
 {
   SEXP ans, rglst;
   /* rglist list of range parameters */
-  int i, j, M, N, m, tlen, nn, n0, nfea, nsvd;
+  int i, j, M, N, m, tlen, nn, n0, nfea, nsvd, info;
   int nadd, resvdThres, every, maxit, verb, nbas, isMode, numstarts;
   double frac, gstart;
   double **X0, **design, **resp;
@@ -110,8 +111,27 @@ SEXP lasvdgp_Call(SEXP X0_, SEXP design_, SEXP resp_, SEXP nn_,
     xpred = X0[i];
     lasvdgp = newlasvdGP(xpred, design, resp, N, m, tlen, nn, n0,
 			 nfea, nsvd, nadd, frac, gstart);
+    if(!lasvdgp)
+    {
+      const_vector(pmean[i],NA_REAL,tlen);
+      const_vector(ps2mode[i],NA_REAL,tlen);
+      const_vector(ps2mean[i],NA_REAL,tlen);
+      ress2mode[i] = NA_REAL;
+      ress2mean[i] = NA_REAL;
+      continue;
+    }
     jmlelasvdGPms(lasvdgp, numstarts, maxit, verb);
-    iterlasvdGPms(lasvdgp, resvdThres, every, numstarts, maxit, verb);
+    info = iterlasvdGPms(lasvdgp, resvdThres, every, numstarts, maxit, verb);
+    if(info != 0)
+    {
+      const_vector(pmean[i],NA_REAL,tlen);
+      const_vector(ps2mode[i],NA_REAL,tlen);
+      const_vector(ps2mean[i],NA_REAL,tlen);
+      ress2mode[i] = NA_REAL;
+      ress2mean[i] = NA_REAL;
+      deletelasvdGP(lasvdgp);
+      continue;
+    }
     predlasvdgpCall(lasvdgp, pmean[i], ps2mode[i], ps2mean[i], ress2mode+i, ress2mean+i);
     nbas = lasvdgp->nbas;
     SET_VECTOR_ELT(rglst, i, allocMatrix(REALSXP,m,nbas));

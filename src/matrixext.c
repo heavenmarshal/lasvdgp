@@ -73,14 +73,18 @@ void sub_p_matrix_rows_col(double* vec, int* p, double **mat,
   for(i=0; i<lenp; ++i)
     vec[i] = mat[p[i]][col];
 }
+void const_vector(double *vec, double scalar, unsigned int n)
+{
+  int i;
+  for(i=0; i<n; ++i)
+    vec[i] = scalar;
+}
 double* new_const_vector(double scalar, unsigned int n)
 {
   int i;
   double *vec;
   vec = new_vector(n);
-  for(i=0; i<n; ++i)
-    vec[i] = scalar;
-  
+  const_vector(vec,scalar,n);
   return vec;
 }
 void sum_vector_scalar(double *v, double scalar, unsigned int n)
