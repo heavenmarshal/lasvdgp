@@ -7,14 +7,17 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <float.h>
-#include <R.h>
-#include <Rmath.h>
+#include "myjmlegpsep.h"
+#include "rhelp.h"
+#ifdef _OPENMP
+  #include <omp.h>
+#endif
+
 static const double dab1 = 1.5;
 static const double numdab2 = 3.907364;
 static const double quanp = 0.1;
 static const double sqreps = 1.490116119384766E-8;
 static double gab[2] = {0.0, 0.0};
-//extern double NA_REAL;
 
 void getDs(double **X, unsigned int n, unsigned int m,
 	   double *dstart, double *dmin, double *dmax, double *dab2)
@@ -48,10 +51,9 @@ lasvdGP* newlasvdGP(double* xpred, double **design, double **resp,
   assert(design);
   assert(resp);
   assert(xpred);
-  int lsvdi, info;
+  int lsvdi;
   int segs[3] = {nfea,nsvd,n0};
   lasvdGP* lasvdgp = (lasvdGP*) malloc(sizeof(lasvdGP));
-  if(!lasvdgp) return NULL;
   lasvdgp -> N = N;
   lasvdgp -> m = m;
   lasvdgp -> tlen = tlen;
@@ -76,32 +78,10 @@ lasvdGP* newlasvdGP(double* xpred, double **design, double **resp,
   lasvdgp -> svdidx = new_ivector(lsvdi);
   dupiv(lasvdgp -> svdidx, lasvdgp -> feaidx, nsvd);
   lasvdgp -> neigsvdidx = iseq(0,nn-1);
-  info = buildBasis(lasvdgp);
-  if(info != 0)
-  {
-    deletelasvdGPdata(lasvdgp);
-    return NULL;
-  }
+  buildBasis(lasvdgp);
   buildGPseps(lasvdgp);
-  return lasvdgp;
-}
-void deletelasvdGPdata(lasvdGP* lasvdgp)
-{
-  assert(lasvdgp -> xpred);
-  free(lasvdgp -> xpred);
-  assert(lasvdgp -> feaidx);
-  free(lasvdgp -> feaidx);
-  assert(lasvdgp -> svdidx);
-  free(lasvdgp -> svdidx);
-  assert(lasvdgp -> neigsvdidx);
-  free(lasvdgp -> neigsvdidx);
 
-  if(lasvdgp -> basis)
-    free(lasvdgp -> basis);
-  if(lasvdgp -> reds)
-    free(lasvdgp -> reds);
-  if(lasvdgp -> coeff)
-    delete_matrix(lasvdgp -> coeff);
+  return lasvdgp;
 }
 void deletelasvdGP(lasvdGP* lasvdgp)
 {
@@ -112,14 +92,30 @@ void deletelasvdGP(lasvdGP* lasvdgp)
   for(i = 0; i < nbas; ++i)
     if(gpseps[i]) deleteGPsep(gpseps[i]);
   free(lasvdgp -> gpseps);
-  deletelasvdGPdata(lasvdgp);
+
+  assert(lasvdgp -> xpred);
+  free(lasvdgp -> xpred);
+  assert(lasvdgp -> feaidx);
+  free(lasvdgp -> feaidx);
+  assert(lasvdgp -> svdidx);
+  free(lasvdgp -> svdidx);
+  assert(lasvdgp -> neigsvdidx);
+  free(lasvdgp -> neigsvdidx);
+
+  assert(lasvdgp -> basis);
+  free(lasvdgp -> basis);
+  assert(lasvdgp -> reds);
+  free(lasvdgp -> reds);
+  assert(lasvdgp -> coeff);
+  delete_matrix(lasvdgp -> coeff);
+
   free(lasvdgp);
 }
-int buildBasis(lasvdGP *lasvdgp)
+void buildBasis(lasvdGP *lasvdgp)
 {
   double **resp, **vt;
   double *u, *s;
-  int nsvd, tlen, nv, nbas, info;
+  int nsvd, tlen, nv, nbas;
   nsvd = lasvdgp -> nsvd;
   tlen = lasvdgp -> tlen;
   nv = nsvd<tlen? nsvd : tlen;
@@ -128,9 +124,7 @@ int buildBasis(lasvdGP *lasvdgp)
   vt = new_matrix(nsvd,nv);
   u = new_vector(tlen * nv);
   s = new_vector(nv);
-  info = linalg_dgesdd(resp,tlen,nsvd,s,u,vt);
-  if(info != 0)
-    return info;
+  linalg_dgesdd(resp,tlen,nsvd,s,u,vt);
   nbas = fracvlen(s,lasvdgp->frac,nv);
   if(lasvdgp->basis) free(lasvdgp->basis);
   lasvdgp->basis = new_vector(tlen * nbas);
@@ -149,7 +143,6 @@ int buildBasis(lasvdGP *lasvdgp)
   delete_matrix(vt);
   free(u);
   free(s);
-  return 0;
 }
 void buildGPseps(lasvdGP *lasvdgp)
 {
@@ -179,23 +172,18 @@ void buildGPseps(lasvdGP *lasvdgp)
 }
 void jmlelasvdGP(lasvdGP *lasvdgp, unsigned int maxit, unsigned int verb)
 {
-  double *dmin, *dmax;
   double dab[2], grange[2]={sqreps,lasvdgp->gstart};
   double dstart, ddmin, ddmax, dab2;
   int i, dits, gits, dconv;
   getDs(lasvdgp->gpseps[0]->X,lasvdgp->n0,lasvdgp->m, &dstart, &ddmin, &ddmax,
 	&dab2);
-  dmin = new_const_vector(ddmin,lasvdgp->m);
-  dmax = new_const_vector(ddmax,lasvdgp->m);
   dab[0] = dab1;
   dab[1] = dab2;
   for(i=0; i<lasvdgp->nbas; ++i)
-    jmleGPsep(lasvdgp->gpseps[i], maxit, dmin, dmax,
-	      grange, dab, gab, verb, &dits,
-	      &gits, &dconv, 1); /* fromR not sure */
+    myjmleGPsep(lasvdgp->gpseps[i], maxit, ddmin, ddmax,
+		grange, dab, gab, verb, &dits,
+		&gits, &dconv);
   lasvdgp->hasfitted = 1;
-  free(dmin);
-  free(dmax);
 }
 void selectNewPoints(lasvdGP *lasvdgp)
 {
@@ -266,19 +254,18 @@ void selectNewPoints(lasvdGP *lasvdgp)
   free(zcord);
 }
 /* space for optimization since design set can be reused */
-int renewlasvdGP(lasvdGP* lasvdgp)
+void renewlasvdGP(lasvdGP* lasvdgp)
 {
-  int i, nbas, info;
+  int i, nbas;
   assert(lasvdgp->gpseps);
   nbas = lasvdgp -> nbas;
   /* delete old gp models */
   for(i = 0; i < nbas; ++i)
     if(lasvdgp->gpseps[i]) deleteGPsep(lasvdgp->gpseps[i]);
   free(lasvdgp -> gpseps);
-  info = buildBasis(lasvdgp);
-  if(info != 0) return info;
+
+  buildBasis(lasvdgp);
   buildGPseps(lasvdgp);
-  return 0;
 }
 void predlasvdGP(lasvdGP* lasvdgp, double* pmean, double* ps2)
 {
@@ -323,10 +310,10 @@ void predlasvdGP(lasvdGP* lasvdgp, double* pmean, double* ps2)
   free(cdf);
   free(bassq);
 }
-int iterlasvdGP(lasvdGP* lasvdgp, unsigned int resvdThres,
-		unsigned int every, unsigned int maxit, unsigned int verb)
+void iterlasvdGP(lasvdGP* lasvdgp, unsigned int resvdThres,
+		 unsigned int every, unsigned int maxit, unsigned int verb)
 {
-  int i, n0, nn, niter, nadd, nrem, info;
+  int i, n0, nn, niter, nadd, nrem;
   nn = lasvdgp -> nn;
   n0 = lasvdgp -> n0;
   nadd = lasvdgp -> nadd;
@@ -341,8 +328,7 @@ int iterlasvdGP(lasvdGP* lasvdgp, unsigned int resvdThres,
     selectNewPoints(lasvdgp);
     if(lasvdgp -> nappsvd >= resvdThres)
     {
-      info = renewlasvdGP(lasvdgp);
-      if(info != 0) return info;
+      renewlasvdGP(lasvdgp);
       jmlelasvdGP(lasvdgp,maxit,verb);
       continue;
     }
@@ -351,14 +337,10 @@ int iterlasvdGP(lasvdGP* lasvdgp, unsigned int resvdThres,
   }
   /* finishing off */
   if(lasvdgp->nappsvd > 0)
-  {
-    info = renewlasvdGP(lasvdgp);
-    if(info != 0) return info;
-  }
+    renewlasvdGP(lasvdgp);
   if(lasvdgp->hasfitted == 0)
     jmlelasvdGP(lasvdgp, maxit, verb);
-  
-  return 0;
+
 }
 void lasvdGP_worker(double** X0, double **design, double **resp,
 		    unsigned int M, unsigned int N, unsigned int m,
@@ -368,32 +350,21 @@ void lasvdGP_worker(double** X0, double **design, double **resp,
 		    unsigned int every, unsigned int maxit, unsigned int verb,
 		    double **pmean, double **ps2)
 {
-  int i, info;
-  double *xpred;
-  lasvdGP *lasvdgp;
-  for(i = 0; i < M; ++i)
-  {
-    xpred = X0[i];
-    lasvdgp = newlasvdGP(xpred, design, resp, N, m, tlen, nn, n0,
-			 nfea, nsvd, nadd, frac, gstart);
-    if(!lasvdgp)
+    int i;
+    double *xpred;
+    lasvdGP *lasvdgp;
+    for(i = 0; i < M; ++i)
     {
-      const_vector(pmean[i],NA_REAL,tlen);
-      const_vector(ps2[i],NA_REAL,tlen);
-      continue;
+	if(verb>0)
+	    MYprintf(MYstdout,"processing test #%d\n",i+1);
+	xpred = X0[i];
+	lasvdgp = newlasvdGP(xpred, design, resp, N, m, tlen, nn, n0,
+			     nfea, nsvd, nadd, frac, gstart);
+	jmlelasvdGP(lasvdgp, maxit, verb);
+	iterlasvdGP(lasvdgp, resvdThres, every, maxit, verb);
+	predlasvdGP(lasvdgp, pmean[i], ps2[i]);
+	deletelasvdGP(lasvdgp);
     }
-    jmlelasvdGP(lasvdgp, maxit, verb);
-    info = iterlasvdGP(lasvdgp, resvdThres, every, maxit, verb);
-    if(info != 0)
-    {
-      const_vector(pmean[i],NA_REAL,tlen);
-      const_vector(ps2[i],NA_REAL,tlen);
-      deletelasvdGP(lasvdgp);
-      continue;
-    }
-    predlasvdGP(lasvdgp, pmean[i], ps2[i]);
-    deletelasvdGP(lasvdgp);
-  }
 }
 
 void lasvdGP_R(double *X0_, double *design_, double *resp_, int* M_,
@@ -413,6 +384,77 @@ void lasvdGP_R(double *X0_, double *design_, double *resp_, int* M_,
   lasvdGP_worker(X0,design,resp,*M_, *N_, *m_, *tlen_, *nn_, *n0_,
 		 *nfea_, *nsvd_, *nadd_, *frac_, *gstart_, *resvdThres_,
 		 *every_, *maxit_, *verb_, pmean, ps2);
+  free(X0);
+  free(design);
+  free(resp);
+  free(pmean);
+  free(ps2);
+}
+void lasvdGP_omp(double** X0, double **design, double **resp,
+		 unsigned int M, unsigned int N, unsigned int m,
+		 unsigned int tlen, unsigned int nn, unsigned int n0,
+		 unsigned int nfea, unsigned int nsvd, unsigned int nadd,
+		 double frac, double gstart, unsigned int resvdThres,
+		 unsigned int every, unsigned int maxit, unsigned int verb,
+		 unsigned int nthread, double **pmean, double **ps2)
+{
+  int mxth;
+#ifdef _OPENMP
+  mxth = omp_get_max_threads();
+#else
+  mxth = 1;
+#endif
+  if(nthread > mxth)
+  {
+    MYprintf(MYstdout, "NOTE: omp.threads(%d) > max(%d), using %d\n",
+      nthread, mxth, mxth);
+    nthread = mxth;
+  }
+#ifdef _OPENMP
+#pragma omp parallel num_threads(nthread)
+  {
+    int i, start, step;
+    double *xpred;
+    lasvdGP *lasvdgp;
+    start = omp_get_thread_num();
+    step  = nthread;
+#else
+    int i, start, step;
+    double *xpred;
+    lasvdGP *lasvdgp;
+    start = 0; step = 1;
+#endif
+    for(i = start; i < M; i+=step)
+    {
+      xpred = X0[i];
+      lasvdgp = newlasvdGP(xpred, design, resp, N, m, tlen, nn, n0,
+			   nfea, nsvd, nadd, frac, gstart);
+      jmlelasvdGP(lasvdgp, maxit, verb);
+      iterlasvdGP(lasvdgp, resvdThres, every, maxit, verb);
+      predlasvdGP(lasvdgp, pmean[i], ps2[i]);
+      deletelasvdGP(lasvdgp);
+    }
+#ifdef _OPENMP
+  }
+#endif
+}
+void lasvdGPomp_R(double *X0_, double *design_, double *resp_, int* M_,
+		  int *N_, int *m_, int *tlen_, int *nn_, int *n0_,
+		  int *nfea_, int* nsvd_, int *nadd_, double *frac_,
+		  double *gstart_, int *resvdThres_, int *every_,
+		  int *maxit_, int *verb_, int *nthread_,
+		  double *pmean_, double *ps2_)
+{
+  double **X0, **design, **resp;
+  double **pmean, **ps2;
+  X0 = new_matrix_bones(X0_,*M_, *m_);
+  design = new_matrix_bones(design_,*N_,*m_);
+  resp = new_matrix_bones(resp_,*N_, *tlen_);
+  pmean = new_matrix_bones(pmean_,*M_,*tlen_);
+  ps2 = new_matrix_bones(ps2_,*M_,*tlen_);
+  lasvdGP_omp(X0,design,resp,*M_, *N_, *m_, *tlen_, *nn_, *n0_,
+	      *nfea_, *nsvd_, *nadd_, *frac_, *gstart_, *resvdThres_,
+	      *every_, *maxit_, *verb_, *nthread_, pmean, ps2);
   free(X0);
   free(design);
   free(resp);

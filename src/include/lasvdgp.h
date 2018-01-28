@@ -37,16 +37,15 @@ lasvdGP* newlasvdGP(double* xpred, double **design, double **resp,
 		    unsigned int nn, unsigned int n0, unsigned int nfea,
 		    unsigned int nsvd, unsigned int nadd, double frac,
 		    double gstart);
-void deletelasvdGPdata(lasvdGP* lasvdgp);
 void deletelasvdGP(lasvdGP* lasvdgp);
-int buildBasis(lasvdGP *lasvdgp);
+void buildBasis(lasvdGP *lasvdgp);
 void buildGPseps(lasvdGP *lasvdgp);
 void jmlelasvdGP(lasvdGP *lasvdgp, unsigned int maxit, unsigned int verb);
 void selectNewPoints(lasvdGP *lasvdgp);
-int renewlasvdGP(lasvdGP* lasvdgp);
+void renewlasvdGP(lasvdGP* lasvdgp);
 void predlasvdGP(lasvdGP* lasvdgp, double* pmean, double* ps2);
-int iterlasvdGP(lasvdGP* lasvdgp, unsigned int resvdThres,
-		unsigned int every, unsigned int maxit, unsigned int verb);
+void iterlasvdGP(lasvdGP* lasvdgp, unsigned int resvdThres,
+		 unsigned int every, unsigned int maxit, unsigned int verb);
 
 void lasvdGP_worker(double** X0, double **design, double **resp,
 		    unsigned int M, unsigned int N, unsigned int m,
@@ -55,4 +54,7 @@ void lasvdGP_worker(double** X0, double **design, double **resp,
 		    double frac, double gstart, unsigned int resvdThres,
 		    unsigned int every, unsigned int maxit, unsigned int verb,
 		    double **pmean, double **ps2);
+
+
+
 #endif

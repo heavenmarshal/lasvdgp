@@ -3,7 +3,7 @@
 
 const char jobz = 'S';
 
-int linalg_dgesdd(double **X, unsigned int nrow, unsigned int ncol,
+void linalg_dgesdd(double **X, unsigned int nrow, unsigned int ncol,
 		   double *s, double *u, double **vt)
 {
   int info = 0, lwork = -1;
@@ -23,8 +23,7 @@ int linalg_dgesdd(double **X, unsigned int nrow, unsigned int ncol,
 		   *vt,&nsv,work,&lwork,iwork,&info);
   free(work);
   free(iwork);
-  return info;
-  /* if(info != 0) */
-  /*   error("error code %d from Lapack routine '%s'", info, "dgesdd"); */
+  if(info != 0)
+    error("error code %d from Lapack routine '%s'", info, "dgesdd");
   
 }

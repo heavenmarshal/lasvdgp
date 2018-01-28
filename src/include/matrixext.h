@@ -6,7 +6,6 @@ int *nearest_indices(const unsigned int, const unsigned int, double**,
 int fracvlen(double*, double, unsigned int);
 void sub_p_matrix_rows_col(double*, int*, double**,
 			   unsigned int, unsigned int);
-void const_vector(double*, double, unsigned int);
 double* new_const_vector(double, unsigned int);
 void sum_vector_scalar(double*, double, unsigned int);
 int find_int(int*, int, unsigned int);
