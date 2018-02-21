@@ -12,7 +12,7 @@
 
 \description{
   Fit a local approximate SVD-based GP model with test set \code{X0},
-  design set \code{X} and response matrix \code{resp}. The local design
+  design set \code{design} and response matrix \code{resp}. The local design
   consists of \code{nn} out of which \code{n0} points are selected by
   the Euclidean distance. If \code{n0} = \code{nn}, it performs the
   naive approach knnsvdGP. The functions \code{lasvdgpWorker} and
@@ -114,7 +114,8 @@ lasvdgpmsOmp(X0, design, resp, n0, nn,
   \item{gstart}{
     The starting number and upper bound of for estimating the nugget
     parameter. If \code{gstart = sqrt(.Machine$double.eps)}, the nugget
-    will be fixed at \code{sqrt(.Machine$double.eps)}.
+    will be fixed at \code{sqrt(.Machine$double.eps)}, since the lower
+    bound is prefixed at \code{sqrt(.Machine$double.eps)}.
   }
   \item{resvdThres}{
     The threshold to re-perform SVD. After every \code{resvdThres}
@@ -148,7 +149,7 @@ lasvdgpmsOmp(X0, design, resp, n0, nn,
     screen. If \code{verb=0} the function is executed in silence.
   }
   \item{nthread}{
-    The number of threads (process) used in parallel execution of this
+    The number of threads (processes) used in parallel execution of this
     function.
   }
   \item{clutype}{

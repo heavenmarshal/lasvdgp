@@ -6,7 +6,7 @@
 
 \description{
   Local approximate SVD-based GP model (lasvdGP) for large-scale dynamic
-  computer experiments. This package intend to address the issue that
+  computer experiments. This package intends to address the issue that
   the input set of the dynamic computer experiments is too large (as
   large as more than tens of thousands) for the full GP models to
   emulate. As is well known, the time complexity of fitting a GP model

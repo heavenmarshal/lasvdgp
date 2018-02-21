@@ -1,0 +1,7 @@
+LAGP_PATH = `echo 'library(laGP); cat(system.file(package="laGP",mustWork=TRUE))'\
+| "${R_HOME}/bin/R" --vanilla --slave`/libs/x64/laGP.dll
+LBFGSB_PATH = `echo 'library(lbfgsb3); cat(system.file(package="lbfgsb3",mustWork=TRUE))'\
+| "${R_HOME}/bin/R" --vanilla --slave`/libs/x64/lbfgsb3.dll
+PKG_CFLAGS = -I include $(SHLIB_OPENMP_CFLAGS) -DRPRINT
+PKG_CXXFLAGS = -I include
+PKG_LIBS = "${LAGP_PATH}" "${LBFGSB_PATH}" ${LAPACK_LIBS} ${BLAS_LIBS} ${FLIBS} $(SHLIB_OPENMP_CFLAGS)
